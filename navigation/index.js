@@ -1,18 +1,7 @@
 // Navigation.js
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import {
-  NavigationContainer,
-  DefaultTheme,
-  DarkTheme,
-} from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { View, Text } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
-
-import HomeScreen from "../app/screens/HomeScreen";
-import DetailScreen from "../app/screens/DetailScreen";
-import ThemeToggleSwitch from "../components/ThemeToggleSwitch";
 import { useTheme } from "../utils/ThemeContext";
 import { StackScreens } from "../utils/StackScreens";
 import AppHeader from "../components/Appheader";
@@ -32,7 +21,6 @@ export default function Navigation() {
             options={({ navigation }) => ({
               headerShown: screen.name === "WelcomeScreen" ? false : true,
               headerTransparent: screen.name === "DetailScreen" ? true : false,
-             
               header: (props) => (
                 <AppHeader
                   {...props}

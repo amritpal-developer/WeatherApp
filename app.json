@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/appLogo.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.amritpal_01.WeatherApp"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +38,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "72ed111d-2bd4-471d-b2c7-adc0b2878f10"
+      }
     }
   }
 }
