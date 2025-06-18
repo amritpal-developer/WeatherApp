@@ -3,6 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
+import { useTheme } from '../utils/ThemeContext';
+
 
 const iconMap = {
   rain: { name: 'weather-rainy', color: '#4A90E2', family: 'Material' },
@@ -29,6 +31,8 @@ const renderIcon = (iconConfig) => {
 };
 
 const HourlyForecastCard = ({ hourData }) => {
+  const { theme } = useTheme(); 
+
   if (!hourData) return null;
 
   const { datetime, temp, icon } = hourData;
@@ -54,10 +58,14 @@ const HourlyForecastCard = ({ hourData }) => {
   };
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.time}>{formatHour(datetime)}</Text>
+    <View style={[styles.card, { backgroundColor: theme.card }]}>
+      <Text style={[styles.time, { color: theme.text }]}>
+        {formatHour(datetime)}
+      </Text>
       {renderIcon(iconConfig)}
-      <Text style={styles.temp}>{Math.round(temp)}°</Text>
+      <Text style={[styles.temp, { color: theme.text }]}>
+        {Math.round(temp)}°
+      </Text>
     </View>
   );
 };
@@ -65,7 +73,6 @@ const HourlyForecastCard = ({ hourData }) => {
 const styles = StyleSheet.create({
   card: {
     alignItems: 'center',
-    backgroundColor: '#1c1c1e',
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 8,
@@ -73,13 +80,11 @@ const styles = StyleSheet.create({
     width: 65,
   },
   time: {
-    color: '#fff',
     fontSize: 14,
     marginBottom: 6,
     fontWeight: '500',
   },
   temp: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
     marginTop: 6,

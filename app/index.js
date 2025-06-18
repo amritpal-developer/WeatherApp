@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { LogBox } from 'react-native';
 import Navigation from '../navigation';
-
+import { ThemeProvider } from "../utils/ThemeContext";
 export default function App() {
   useEffect(() => {
     LogBox.ignoreAllLogs(true); // 👈 Disable all warning logs
@@ -10,5 +10,9 @@ export default function App() {
     // LogBox.ignoreLogs(['Warning: ...']);
   }, []);
 
-  return <Navigation />;
+  return (
+    <ThemeProvider>
+      <Navigation />
+    </ThemeProvider>
+  );
 }

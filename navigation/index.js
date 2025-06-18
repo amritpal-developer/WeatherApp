@@ -1,23 +1,48 @@
 // Navigation.js
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../app/screens/HomeScreen';
-import DetailScreen from '../app/screens/DetailScreen';
-import 'react-native-gesture-handler';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import {
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
+} from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { View, Text } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
+import HomeScreen from "../app/screens/HomeScreen";
+import DetailScreen from "../app/screens/DetailScreen";
+import ThemeToggleSwitch from "../components/ThemeToggleSwitch";
+import { useTheme } from "../utils/ThemeContext";
+import { StackScreens } from "../utils/StackScreens";
+import AppHeader from "../components/Appheader";
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 export default function Navigation() {
+  const { theme} = useTheme();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack.Navigator screenOptions={{ headerShown: true}}>
-        <Stack.Screen name="HomeScreen" component={HomeScreen} />
-        <Stack.Screen name="DetailScreen" component={DetailScreen} />
+      <Stack.Navigator>
+        {StackScreens.map((screen, index) => (
+          <Stack.Screen
+            key={index}
+            name={screen.name}
+            component={screen.component}
+            options={({ navigation }) => ({
+              headerShown: true,
+              header: (props) => (
+                <AppHeader
+                  {...props}
+                  screen={screen.name}
+                  isDarkMode={theme.mode === "dark"}
+                  navigation={navigation}
+                />
+              ),
+            })}
+          />
+        ))}
       </Stack.Navigator>
-      </GestureHandlerRootView>
-
+    </GestureHandlerRootView>
   );
 }

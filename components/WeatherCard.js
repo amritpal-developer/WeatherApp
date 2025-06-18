@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import LottieView from "lottie-react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { LinearGradient } from "expo-linear-gradient";// ⬅️ Import useTheme
+import { useTheme } from "../utils/ThemeContext";
 
 const iconMap = {
   rain: require("../assets/animations/rain.json"),
@@ -13,6 +14,8 @@ const iconMap = {
 };
 
 const WeatherCard = ({ data, minTempGlobal, maxTempGlobal }) => {
+  const { theme } = useTheme(); // ⬅️ Use current theme
+
   if (!data) return null;
 
   const { datetime, tempmax, tempmin, icon, precipprob } = data;
@@ -37,22 +40,37 @@ const WeatherCard = ({ data, minTempGlobal, maxTempGlobal }) => {
     ((tempmax - minTempGlobal) / (maxTempGlobal - minTempGlobal)) * 100;
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.day}>{formatDay(datetime)}</Text>
+    <View
+      style={[
+        styles.card,
+        { borderTopColor: theme.border, backgroundColor: theme.card },
+      ]}
+    >
+      <Text style={[styles.day, { color: theme.text }]}>
+        {formatDay(datetime)}
+      </Text>
+
       <View style={styles.iconWithPercentage}>
         <View style={styles.iconContainer}>
           <LottieView source={lottieIcon} autoPlay loop style={styles.lottie} />
         </View>
         {precipprob ? (
-          <Text style={styles.precip}>{Math.round(precipprob)}%</Text>
+          <Text style={[styles.precip, { color: theme.accent }]}>
+            {Math.round(precipprob)}%
+          </Text>
         ) : (
           <View style={{ width: 40 }} />
         )}
       </View>
-      <Text style={styles.tempText}>{Math.round(tempmin)}°</Text>
+
+      <Text style={[styles.tempText, { color: theme.text }]}>
+        {Math.round(tempmin)}°
+      </Text>
 
       <View style={styles.barContainer}>
-        <View style={[styles.barBackground]} />
+        <View
+          style={[styles.barBackground, { backgroundColor: theme.border }]}
+        />
         <LinearGradient
           colors={["#ffa726", "#ff7043"]}
           start={{ x: 0, y: 0 }}
@@ -67,7 +85,9 @@ const WeatherCard = ({ data, minTempGlobal, maxTempGlobal }) => {
         />
       </View>
 
-      <Text style={styles.tempText}>{Math.round(tempmax)}°</Text>
+      <Text style={[styles.tempText, { color: theme.text }]}>
+        {Math.round(tempmax)}°
+      </Text>
     </View>
   );
 };
@@ -79,14 +99,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 6,
     borderTopWidth: 2,
-    borderTopColor: "#333",
+    borderRadius: 12,
+    marginBottom: 8,
   },
   iconWithPercentage: {
     alignItems: "center",
     justifyContent: "center",
   },
   day: {
-    color: "#fff",
     fontSize: 16,
     width: 60,
     fontWeight: "600",
@@ -102,15 +122,11 @@ const styles = StyleSheet.create({
     height: 32,
   },
   precip: {
-    color: "#58a6ff",
     fontSize: 14,
-    // width: 40,
     fontWeight: "500",
-    alignSelf:'center',
-    alignItems:'center'
+    alignSelf: "center",
   },
   tempText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "500",
     width: 40,
@@ -124,7 +140,6 @@ const styles = StyleSheet.create({
   },
   barBackground: {
     height: 6,
-    backgroundColor: "#444",
     borderRadius: 3,
     width: "100%",
     position: "absolute",

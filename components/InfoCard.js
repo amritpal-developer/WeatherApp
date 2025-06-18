@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useTheme } from "../utils/ThemeContext";
 
 const InfoCard = ({ iconName, title, value, unit, description }) => {
+  const { theme } = useTheme(); 
+
   const spinAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -41,37 +44,34 @@ const InfoCard = ({ iconName, title, value, unit, description }) => {
     outputRange: ["0deg", "360deg"],
   });
 
+  const animatedStyle =
+    iconName === "weather-windy" || iconName === "compass"
+      ? { transform: [{ rotate: spin }] }
+      : iconName === "weather-sunny-alert" || iconName === "thermometer"
+      ? { transform: [{ scale: pulseAnim }] }
+      : {};
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card }]}>
       <View style={styles.titleRow}>
-        <Animated.View
-          style={[
-            styles.iconWrapper,
-            (iconName === "weather-windy" || iconName === "compass") && {
-              transform: [{ rotate: spin }],
-            },
-            (iconName === "weather-sunny-alert" ||
-              iconName === "thermometer") && {
-              transform: [{ scale: pulseAnim }],
-            },
-          ]}
-        >
-          <MaterialCommunityIcons name={iconName} size={20} color="#fff" />
+        <Animated.View style={[styles.iconWrapper, animatedStyle]}>
+          <MaterialCommunityIcons name={iconName} size={20} color={theme.icon} />
         </Animated.View>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
       </View>
-      <Text style={styles.value}>
+      <Text style={[styles.value, { color: theme.text }]}>
         {value}
         {unit}
       </Text>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={[styles.description, { color: theme.subtext }]}>
+        {description}
+      </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#2c2c2e",
     borderRadius: 12,
     padding: 12,
     width: "47%",
@@ -86,18 +86,15 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   title: {
-    color: "#fff",
     fontSize: 14,
     fontWeight: "500",
   },
   value: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 4,
   },
   description: {
-    color: "#aaa",
     fontSize: 12,
   },
 });

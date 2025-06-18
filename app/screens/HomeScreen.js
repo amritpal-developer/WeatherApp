@@ -12,6 +12,8 @@ import { useNavigation } from "@react-navigation/native";
 import { useApi } from "../../service/useWeather";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Swipeable } from "react-native-gesture-handler";
+import { allCities } from "../../utils/allCities";
+import { useTheme } from "../../utils/ThemeContext"; // Theme hook
 
 const HomeScreen = () => {
   const [search, setSearch] = useState("");
@@ -19,17 +21,7 @@ const HomeScreen = () => {
   const [savedCities, setSavedCities] = useState([]);
   const navigation = useNavigation();
   const { fetchWeather } = useApi();
-
-  const allCities = [
-    "Patiala",
-    "Sangrur",
-    "Niagara Falls",
-    "Sudbury",
-    "Delhi",
-    "Chandigarh",
-    "Ludhiana",
-    "Toronto",
-  ];
+  const { theme } = useTheme(); // Get current theme
 
   useEffect(() => {
     loadSavedCities();
@@ -49,29 +41,33 @@ const HomeScreen = () => {
     if (!search.trim()) return;
 
     const weather = await fetchWeather(search);
-    if (weather) {
-      const alreadySaved = savedCities.some(
-        (c) => c.address.toLowerCase() === weather.address.toLowerCase()
-      );
-      if (!alreadySaved) {
-        const updatedCities = [weather, ...savedCities];
-        setSavedCities(updatedCities);
-        await AsyncStorage.setItem(
-          "cities",
-          JSON.stringify(updatedCities.map((c) => c.address))
-        );
-      }
-      setSearch("");
-      setSuggestions([]);
-    } else {
+    if (!weather) {
       alert("City not found or data unavailable.");
+      return;
     }
+
+    const alreadySaved = savedCities.some(
+      (c) => c.address.toLowerCase() === weather.address.toLowerCase()
+    );
+
+    if (alreadySaved) {
+      alert("City is already added.");
+      return;
+    }
+
+    const updatedCities = [weather, ...savedCities];
+    setSavedCities(updatedCities);
+    await AsyncStorage.setItem(
+      "cities",
+      JSON.stringify(updatedCities.map((c) => c.address))
+    );
+    setSearch("");
+    setSuggestions([]);
   };
 
   const handleSelect = (city) => {
     setSearch(city);
     setSuggestions([]);
-    handleSearch();
   };
 
   const handleCardPress = (data) => {
@@ -89,36 +85,54 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (search.length > 1) {
-      const filtered = allCities.filter((c) =>
-        c.toLowerCase().startsWith(search.toLowerCase())
-      );
-      setSuggestions(filtered);
+      const filtered = allCities
+        .map((item) => item.city)
+        .filter(
+          (cityName, index, self) =>
+            cityName.toLowerCase().startsWith(search.toLowerCase()) &&
+            self.indexOf(cityName) === index
+        );
+      setSuggestions(filtered.slice(0, 10));
     } else {
       setSuggestions([]);
     }
   }, [search]);
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Weather</Text>
+  const formatTime = (datetimeStr) => {
+    if (!datetimeStr) return "";
+    const [hourStr, minuteStr] = datetimeStr.split(":");
+    let hour = parseInt(hourStr);
+    const minute = parseInt(minuteStr);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12;
+    return `${hour}:${minute.toString().padStart(2, "0")} ${ampm}`;
+  };
 
-      <View style={styles.searchBox}>
-        <Icon name="search" size={20} color="#888" />
+  return (
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.title, { color: theme.text }]}>Weather</Text>
+
+      <View style={[styles.searchBox, { backgroundColor: theme.card }]}>
+        <Icon name="search" size={20} color={theme.placeholder} style={{ marginRight: 8 }} />
         <TextInput
           placeholder="Search for a city or airport"
-          placeholderTextColor="#888"
-          style={styles.input}
+          placeholderTextColor={theme.placeholder}
+          style={[styles.input, { color: theme.text }]}
           value={search}
           onChangeText={setSearch}
-          onSubmitEditing={handleSearch}
         />
+        {search.length > 0 && (
+          <TouchableOpacity onPress={handleSearch}>
+            <Icon name="chevron-forward" size={24} color={theme.placeholder} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {suggestions.length > 0 && (
-        <View style={styles.suggestionBox}>
+        <View style={[styles.suggestionBox, { backgroundColor: theme.card }]}>
           {suggestions.map((s, idx) => (
             <TouchableOpacity key={idx} onPress={() => handleSelect(s)}>
-              <Text style={styles.suggestion}>{s}</Text>
+              <Text style={[styles.suggestion, { color: theme.text }]}>{s}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -138,18 +152,27 @@ const HomeScreen = () => {
           return (
             <Swipeable key={idx} renderRightActions={renderRightActions}>
               <TouchableOpacity
-                style={styles.card}
+                style={[styles.card, { backgroundColor: theme.card }]}
                 onPress={() => handleCardPress(city)}
               >
                 <View>
-                  <Text style={styles.cityName}>{city?.address}</Text>
-                  <Text style={styles.condition}>
+                  <Text style={[styles.cityName, { color: theme.text }]}>{city?.address}</Text>
+                  <Text style={[styles.condition, { color: theme.subtext }]}>
                     {city?.currentConditions?.conditions}
                   </Text>
+                  <Text style={[styles.hl, { color: theme.subtext }]}>
+                    H: {Math.round(city?.days?.[0]?.tempmax)}° L:{" "}
+                    {Math.round(city?.days?.[0]?.tempmin)}°
+                  </Text>
                 </View>
-                <Text style={styles.temp}>
-                  {Math.round(city?.currentConditions?.temp)}°
-                </Text>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={[styles.temp, { color: theme.text }]}>
+                    {Math.round(city?.currentConditions?.temp)}°
+                  </Text>
+                  <Text style={[styles.time, { color: theme.subtext }]}>
+                    {formatTime(city?.currentConditions?.datetime)}
+                  </Text>
+                </View>
               </TouchableOpacity>
             </Swipeable>
           );
@@ -162,40 +185,54 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
     paddingHorizontal: 16,
     paddingTop: 50,
   },
-  title: { fontSize: 32, color: "#fff", fontWeight: "700", marginBottom: 12 },
+  title: {
+    fontSize: 32,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1c1c1e",
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 44,
     marginBottom: 8,
   },
-  input: { flex: 1, color: "#fff", paddingLeft: 8 },
+  input: {
+    flex: 1,
+    paddingLeft: 8,
+  },
   suggestionBox: {
-    backgroundColor: "#1c1c1e",
     borderRadius: 10,
     paddingVertical: 4,
     marginBottom: 12,
   },
-  suggestion: { color: "#fff", paddingVertical: 6, paddingHorizontal: 12 },
-  cityList: { marginTop: 12 },
+  suggestion: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  cityList: {
+    marginTop: 12,
+  },
   card: {
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "#1c1c1e",
     padding: 16,
     borderRadius: 12,
     marginBottom: 10,
   },
-  cityName: { color: "#fff", fontSize: 18, fontWeight: "600" },
-  condition: { color: "#ccc" },
-  temp: { fontSize: 28, color: "#fff", fontWeight: "bold" },
+  cityName: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  condition: {},
+  temp: {
+    fontSize: 28,
+    fontWeight: "bold",
+  },
   deleteBox: {
     backgroundColor: "red",
     justifyContent: "center",
@@ -207,6 +244,14 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "#fff",
     fontWeight: "600",
+  },
+  time: {
+    fontSize: 14,
+    marginTop: 10,
+  },
+  hl: {
+    fontSize: 14,
+    marginTop: 4,
   },
 });
 
