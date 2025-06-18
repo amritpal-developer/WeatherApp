@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView } from "react-native";
 import ThemeToggleSwitch from "./ThemeToggleSwitch";
 import { useTheme } from "../utils/ThemeContext";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -10,7 +10,7 @@ const AppHeader = ({ screen, navigation, isDarkMode }) => {
   const showBackButton = screen === "DetailScreen";
 
   return (
-    <View
+    <SafeAreaView
       style={[
         styles.container,
         {
@@ -42,16 +42,16 @@ const AppHeader = ({ screen, navigation, isDarkMode }) => {
           {""}
         </Text>
       </View>
-
+   <View style={styles.rightSection}>
       <ThemeToggleSwitch isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-    </View>
-  );
-};
+      </View>
+  </SafeAreaView>
+)};
 
 const styles = StyleSheet.create({
   container: {
     height: 80,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -65,6 +65,10 @@ const styles = StyleSheet.create({
   leftSection: {
     flexDirection: "row",
     alignItems: "center",
+    marginLeft:'5%'
+  },
+  rightSection:{
+marginRight:'5%'
   },
   title: {
     fontSize: 20,
