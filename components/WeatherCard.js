@@ -14,7 +14,7 @@ const iconMap = {
 };
 
 const WeatherCard = ({ data, minTempGlobal, maxTempGlobal }) => {
-  const { theme } = useTheme(); // ⬅️ Use current theme
+  const { theme } = useTheme(); 
 
   if (!data) return null;
 
@@ -43,7 +43,7 @@ const WeatherCard = ({ data, minTempGlobal, maxTempGlobal }) => {
     <View
       style={[
         styles.card,
-        { borderTopColor: theme.border, backgroundColor: theme.card },
+   
       ]}
     >
       <Text style={[styles.day, { color: theme.text }]}>
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 6,
-    borderTopWidth: 2,
+    borderTopWidth: 0.3,
     borderRadius: 12,
     marginBottom: 8,
   },

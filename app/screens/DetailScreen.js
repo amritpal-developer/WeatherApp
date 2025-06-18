@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  ImageBackground,
 } from "react-native";
 import WeatherCard from "../../components/WeatherCard";
 import { useApi } from "../../service/useWeather";
@@ -18,9 +19,11 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import InfoCard from "../../components/InfoCard";
 import { getInfoCards } from "../../utils/infoCardData";
 import { useTheme } from "../../utils/ThemeContext"; // Theme hook
-
+import { getBackgroundImage } from "../../utils/getBackgroundImage";
+import { BlurView } from "expo-blur";
 const WeatherDetailScreen = ({ route }) => {
   const { city } = route.params;
+
   const [weatherData, setWeatherData] = useState(null);
   const [hourlyData, setHourlyData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -62,9 +65,13 @@ const WeatherDetailScreen = ({ route }) => {
 
   if (loading && !refreshing) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <View
+        style={[styles.loadingContainer, { backgroundColor: theme.background }]}
+      >
         <ActivityIndicator size="large" color={theme.accent} />
-        <Text style={[styles.loadingText, { color: theme.subtext }]}>Fetching Weather...</Text>
+        <Text style={[styles.loadingText, { color: theme.subtext }]}>
+          Fetching Weather...
+        </Text>
       </View>
     );
   }
@@ -72,82 +79,102 @@ const WeatherDetailScreen = ({ route }) => {
   const today = weatherData?.days[0];
   const globalMin = Math.min(...weatherData.days.map((day) => day.tempmin));
   const globalMax = Math.max(...weatherData.days.map((day) => day.tempmax));
-
+  const currentHour = new Date(today?.datetime).getHours();
+  const backgroundImage = getBackgroundImage(today.conditions, currentHour);
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-      <ScrollView
+    <SafeAreaView style={{ flex: 1 }}>
+      <ImageBackground
+        source={backgroundImage}
         style={{ flex: 1 }}
-        contentContainerStyle={styles.container}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[theme.accent]}
-            tintColor={theme.accent}
-          />
-        }
+        resizeMode="cover"
       >
-        <Text style={[styles.city, { color: theme.text }]}>{city}</Text>
-        <Text style={[styles.temp, { color: theme.text }]}>{Math.round(today.temp)}°</Text>
-        <Text style={[styles.condition, { color: theme.subtext }]}>
-          {today.conditions}
-        </Text>
-        <View style={[styles.separator, { backgroundColor: theme.border }]} />
-
-        <View style={[styles.hourlyWrapper, { backgroundColor: theme.card }]}>
-          <Text style={[styles.summaryText, { color: theme.text }]}>
-            {today?.description ||
-              "Sunny conditions will continue for the rest of the day."}
+        <ScrollView
+          style={{ flex: 1 ,marginTop:'25%'}}
+          contentContainerStyle={styles.container}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[theme.accent]}
+              tintColor={theme.accent}
+            />
+          }
+        >
+          <Text style={[styles.city, { color: theme.special }]}>{city}</Text>
+          <Text style={[styles.temp, { color:  theme.special }]}>
+            {Math.round(today.temp)}°
+          </Text>
+          <Text style={[styles.condition, { color:theme.special  }]}>
+            {today.conditions}
           </Text>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.hourlyScroll}
+          <View style={[styles.separator, { backgroundColor: theme.border }]} />
+          <BlurView
+            intensity={60}
+            style={[styles.hourlyWrapper]}
+            tint={theme.mode === "dark" ? "dark" : "light"}
           >
-            {hourlyData.slice(0, 12).map((hour, index) => (
-              <HourlyForecastCard key={index} hourData={hour} />
-            ))}
-          </ScrollView>
-        </View>
-
-        <View style={[styles.hourlyWrapper, { backgroundColor: theme.card }]}>
-          <View style={styles.forecastHeaderContainer}>
-            <Ionicons name={"calendar"} size={20} color={theme.text} />
-            <Text style={[styles.forecastTitle, { color: theme.text }]}>
-              10-Day Forecast
+            <Text style={[styles.summaryText, { color: theme.text }]}>
+              {today?.description ||
+                "Sunny conditions will continue for the rest of the day."}
             </Text>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.hourlyScroll}
+            >
+              {hourlyData.slice(0, 12).map((hour, index) => (
+                <HourlyForecastCard key={index} hourData={hour} />
+              ))}
+            </ScrollView>
+          </BlurView>
+
+          <BlurView
+            intensity={60}
+            style={[styles.hourlyWrapper]}
+            tint={theme.mode === "dark" ? "dark" : "light"}
+          >
+            <View style={styles.forecastHeaderContainer}>
+              <Ionicons name={"calendar"} size={20} color={theme.text} />
+              <Text style={[styles.forecastTitle, { color: theme.text }]}>
+                10-Day Forecast
+              </Text>
+            </View>
+            {weatherData?.days.map((day, index) => (
+              <WeatherCard
+                key={index}
+                data={day}
+                minTempGlobal={globalMin}
+                maxTempGlobal={globalMax}
+              />
+            ))}
+      </BlurView>
+
+          <View style={styles.infoBlock}>
+            {getInfoCards(today).map((card, index) => (
+              <InfoCard
+                key={index}
+                iconName={card.iconName}
+                title={card.title}
+                value={card.value}
+                unit={card.unit}
+                description={card.description}
+              />
+            ))}
           </View>
-          {weatherData?.days.map((day, index) => (
-            <WeatherCard
-              key={index}
-              data={day}
-              minTempGlobal={globalMin}
-              maxTempGlobal={globalMax}
-            />
-          ))}
-        </View>
 
-        <View style={styles.infoBlock}>
-          {getInfoCards(today).map((card, index) => (
-            <InfoCard
-              key={index}
-              iconName={card.iconName}
-              title={card.title}
-              value={card.value}
-              unit={card.unit}
-              description={card.description}
-            />
-          ))}
-        </View>
-
-        <TouchableOpacity onPress={openInMaps} style={styles.mapLinkContainer}>
-          <MaterialIcons name="location-on" size={22} color={theme.accent} />
-          <Text style={[styles.mapLinkText, { color: theme.accent }]}>
-            Open {city} in Google Maps
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <TouchableOpacity
+            onPress={openInMaps}
+            style={styles.mapLinkContainer}
+          >
+            <MaterialIcons name="location-on" size={22} color={theme.accent} />
+            <Text style={[styles.mapLinkText, { color: theme.accent }]}>
+              Open {city} in Google Maps
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
@@ -197,6 +224,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 14,
     marginBottom: 16,
+    overflow: "hidden",
   },
   summaryText: {
     fontSize: 16,

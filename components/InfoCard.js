@@ -2,9 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useTheme } from "../utils/ThemeContext";
+import { BlurView } from "expo-blur";
 
 const InfoCard = ({ iconName, title, value, unit, description }) => {
-  const { theme } = useTheme(); 
+  const { theme } = useTheme();
 
   const spinAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -52,10 +53,18 @@ const InfoCard = ({ iconName, title, value, unit, description }) => {
       : {};
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.card }]}>
+    <BlurView
+      intensity={60}
+      style={[styles.card]}
+      tint={theme.mode === "dark" ? "dark" : "light"}
+    >
       <View style={styles.titleRow}>
         <Animated.View style={[styles.iconWrapper, animatedStyle]}>
-          <MaterialCommunityIcons name={iconName} size={20} color={theme.icon} />
+          <MaterialCommunityIcons
+            name={iconName}
+            size={20}
+            color={theme?.text}
+          />
         </Animated.View>
         <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
       </View>
@@ -63,10 +72,10 @@ const InfoCard = ({ iconName, title, value, unit, description }) => {
         {value}
         {unit}
       </Text>
-      <Text style={[styles.description, { color: theme.subtext }]}>
+      <Text style={[styles.description, { color: theme.text }]}>
         {description}
       </Text>
-    </View>
+    </BlurView>
   );
 };
 
@@ -76,6 +85,7 @@ const styles = StyleSheet.create({
     padding: 12,
     width: "47%",
     marginBottom: 12,
+    overflow:'hidden'
   },
   titleRow: {
     flexDirection: "row",

@@ -113,17 +113,17 @@ const HomeScreen = () => {
       <Text style={[styles.title, { color: theme.text }]}>Weather</Text>
 
       <View style={[styles.searchBox, { backgroundColor: theme.card }]}>
-        <Icon name="search" size={20} color={theme.placeholder} style={{ marginRight: 8 }} />
+        <Icon name="search" size={20} color={theme.text} style={{ marginRight: 8 }} />
         <TextInput
           placeholder="Search for a city or airport"
-          placeholderTextColor={theme.placeholder}
-          style={[styles.input, { color: theme.text }]}
+          placeholderTextColor={theme?.text}
+          style={[styles.input, { color: theme?.text }]}
           value={search}
           onChangeText={setSearch}
         />
         {search.length > 0 && (
           <TouchableOpacity onPress={handleSearch}>
-            <Icon name="chevron-forward" size={24} color={theme.placeholder} />
+            <Icon name="chevron-forward" size={24} color={theme.text} />
           </TouchableOpacity>
         )}
       </View>

@@ -20,7 +20,7 @@ import AppHeader from "../components/Appheader";
 const Stack = createStackNavigator();
 
 export default function Navigation() {
-  const { theme} = useTheme();
+  const { theme } = useTheme();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack.Navigator>
@@ -30,7 +30,9 @@ export default function Navigation() {
             name={screen.name}
             component={screen.component}
             options={({ navigation }) => ({
-              headerShown: true,
+              headerShown: screen.name === "WelcomeScreen" ? false : true,
+              headerTransparent: screen.name === "DetailScreen" ? true : false,
+             
               header: (props) => (
                 <AppHeader
                   {...props}
